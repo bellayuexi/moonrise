@@ -1,0 +1,19 @@
+{
+  "name": "月升月落 · 全年月相",
+  "short_name": "月升月落",
+  "description": "查询全年每天的月升月落时间、月相与观测方位，配当日月相古诗。",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#070a17",
+  "theme_color": "#070a17",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

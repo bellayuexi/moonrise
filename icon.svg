@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="35%" r="75%">
+      <stop offset="0%" stop-color="#182047"/>
+      <stop offset="60%" stop-color="#0d1228"/>
+      <stop offset="100%" stop-color="#070a17"/>
+    </radialGradient>
+    <radialGradient id="moon" cx="38%" cy="34%" r="70%">
+      <stop offset="0%" stop-color="#fffdf0"/>
+      <stop offset="100%" stop-color="#efe9c4"/>
+    </radialGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <circle cx="360" cy="150" r="12" fill="#fff" opacity="0.7"/>
+  <circle cx="120" cy="120" r="7" fill="#fff" opacity="0.5"/>
+  <circle cx="420" cy="300" r="6" fill="#fff" opacity="0.5"/>
+  <circle cx="150" cy="360" r="8" fill="#fff" opacity="0.45"/>
+  <!-- 弯月：满圆减去偏移圆 -->
+  <g>
+    <circle cx="256" cy="256" r="132" fill="url(#moon)"/>
+    <circle cx="304" cy="230" r="120" fill="url(#bg)"/>
+  </g>
+  <!-- 地平线弧 -->
+  <path d="M 96 400 A 160 160 0 0 1 416 400" fill="none" stroke="#8ea2ff" stroke-width="4" opacity="0.5"/>
+  <line x1="96" y1="400" x2="416" y2="400" stroke="#ffffff" stroke-width="3" opacity="0.35"/>
+</svg>

@@ -1,0 +1,312 @@
+:root {
+  --bg-0: #070a17;
+  --bg-1: #0d1228;
+  --bg-2: #141b3a;
+  --ink: #e8ecff;
+  --ink-dim: #9aa3c7;
+  --ink-faint: #5b648c;
+  --moon: #f4f1d0;
+  --moon-glow: rgba(244, 241, 208, 0.55);
+  --accent: #8ea2ff;
+  --rise: #ffd08a;
+  --set: #a6b4ff;
+  --line: rgba(255, 255, 255, 0.08);
+  --card: rgba(255, 255, 255, 0.04);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: radial-gradient(120% 90% at 50% -10%, #182047 0%, var(--bg-1) 40%, var(--bg-0) 100%);
+  color: var(--ink);
+  font-family: "PingFang SC", "Microsoft YaHei", "Noto Serif SC", system-ui, sans-serif;
+  min-height: 100vh;
+}
+
+body { position: relative; overflow-x: hidden; }
+
+/* 星空背景 */
+.stars {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+.stars .star {
+  position: absolute;
+  background: #fff;
+  border-radius: 50%;
+  opacity: 0.7;
+  animation: twinkle var(--dur, 4s) ease-in-out infinite;
+}
+@keyframes twinkle {
+  0%, 100% { opacity: 0.15; }
+  50% { opacity: 0.85; }
+}
+
+.topbar, main, .foot { position: relative; z-index: 1; }
+
+/* 顶栏 */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 20px 40px;
+  max-width: 1920px;
+  margin: 0 auto;
+}
+.topbar h1 {
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: 4px;
+  margin: 0;
+  color: var(--moon);
+  text-shadow: 0 0 18px var(--moon-glow);
+}
+.controls { display: flex; align-items: flex-end; gap: 14px; flex-wrap: wrap; }
+.ctl { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: var(--ink-dim); }
+.ctl select, .ctl input {
+  background: var(--bg-2);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 7px 10px;
+  font-size: 14px;
+  color-scheme: dark;
+}
+.btn-ghost {
+  background: transparent;
+  color: var(--ink-dim);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 7px 12px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all .15s;
+}
+.btn-ghost:hover { color: var(--ink); border-color: var(--accent); }
+
+main { max-width: 1920px; margin: 0 auto; padding: 0 40px 30px; }
+
+/* 三栏布局：左月历(1-6) 贴左 | 中央穹顶(不变) 居中 | 右月历(7-12) 贴右 */
+.layout { display: flex; gap: 22px; align-items: flex-start; justify-content: space-between; }
+.pane-center { flex: 0 0 600px; max-width: 600px; min-width: 0; }
+.cal-col { flex: 0 0 auto; width: 190px; }
+
+@media (max-width: 1080px) {
+  /* 窄屏：中间在上，两列月历并排在下 */
+  .layout { flex-wrap: wrap; justify-content: center; }
+  .pane-center { flex: 1 1 100%; max-width: 640px; order: 1; margin: 0 auto; }
+  .cal-col { order: 2; flex: 1 1 45%; width: auto; }
+}
+
+/* 天空穹顶 */
+.dome-section {
+  margin-top: 8px;
+  padding: 10px 0 4px;
+}
+.dome-wrap { width: 100%; position: relative; }
+#dome { width: 100%; height: auto; display: block; }
+
+/* 罗盘叠加在穹顶正中央（不覆盖弧线） */
+.dome-compass {
+  position: absolute;
+  left: 50%;
+  top: 54%;
+  transform: translate(-50%, -50%);
+  width: 27%;
+  max-width: 200px;
+  min-width: 118px;
+}
+.dome-compass svg { width: 100%; height: auto; display: block; }
+
+/* 观测时刻控制 */
+.time-control {
+  max-width: none;
+  margin: 6px 0 0;
+  padding: 0 2px;
+}
+.tc-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+.tc-label { font-size: 13px; color: var(--accent); letter-spacing: 1px; }
+.tc-row input[type="time"] {
+  background: var(--bg-2);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 15px;
+  color-scheme: dark;
+  font-variant-numeric: tabular-nums;
+}
+.tc-now { padding: 5px 10px; font-size: 13px; }
+.tc-live { font-size: 12px; color: var(--ink-dim); }
+.tc-live.on { color: #7ee0a0; }
+
+.time-slider {
+  width: 100%;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #1a2148, #2b356b);
+  outline: none;
+  cursor: pointer;
+}
+.time-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--moon);
+  box-shadow: 0 0 8px var(--moon-glow);
+  cursor: pointer;
+}
+.time-slider::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border: none;
+  border-radius: 50%;
+  background: var(--moon);
+  box-shadow: 0 0 8px var(--moon-glow);
+  cursor: pointer;
+}
+
+.dome-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: -8px;
+}
+.rise-set { text-align: center; min-width: 90px; }
+.rs-label { font-size: 12px; letter-spacing: 2px; }
+.rise .rs-label { color: var(--rise); }
+.set .rs-label { color: var(--set); }
+.rs-time { font-size: 26px; font-weight: 600; font-variant-numeric: tabular-nums; margin-top: 2px; }
+.rs-az { font-size: 11px; color: var(--ink-faint); margin-top: 2px; }
+
+.phase-center { text-align: center; }
+.phase-name { font-size: 16px; color: var(--ink); letter-spacing: 2px; }
+.phase-illum { font-size: 12px; color: var(--ink-dim); margin-top: 3px; }
+
+/* 配诗卡片 */
+.poem-card {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin: 16px 0 8px;
+  padding: 16px 22px;
+  max-width: none;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  backdrop-filter: blur(6px);
+}
+.poem-phase-icon { flex: 0 0 auto; }
+.poem-card blockquote { margin: 0; }
+.poem-text {
+  font-family: "Noto Serif SC", "STKaiti", "KaiTi", serif;
+  font-size: 20px;
+  line-height: 1.7;
+  margin: 0 0 6px;
+  color: var(--moon);
+}
+.poem-author { font-size: 13px; color: var(--ink-dim); font-style: normal; }
+
+/* 观测指引卡片 */
+.observe-card {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  margin: 12px 0 0;
+  padding: 14px 22px;
+  max-width: none;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  backdrop-filter: blur(6px);
+}
+.observe-text { flex: 1; min-width: 0; }
+.observe-title { font-size: 13px; letter-spacing: 2px; color: var(--accent); margin-bottom: 8px; }
+.observe-desc {
+  font-size: 17px;
+  line-height: 1.6;
+  margin: 0 0 8px;
+  color: var(--ink);
+}
+.observe-desc b { color: var(--moon); font-weight: 600; }
+.observe-hint { font-size: 13px; color: var(--ink-dim); margin: 0; line-height: 1.5; }
+
+@media (max-width: 560px) {
+  .observe-card { flex-direction: column; gap: 14px; padding: 16px; }
+  .observe-text { text-align: center; }
+}
+
+/* 全年概览 — 竖向月历列 */
+.year-section { margin-top: 0; }
+.year-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  min-height: 30px;
+}
+.year-head-spacer { min-height: 30px; margin-bottom: 12px; }
+.year-head h2 { font-size: 15px; font-weight: 500; letter-spacing: 1px; color: var(--ink-dim); margin: 0; }
+.year-nav { display: flex; align-items: center; gap: 8px; }
+.year-nav span { font-size: 15px; font-variant-numeric: tabular-nums; min-width: 44px; text-align: center; }
+
+/* 每列月历：月份块竖向堆叠，保持原始大小 */
+.year-grid-col {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.month-block {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 10px;
+}
+.month-title { font-size: 12px; color: var(--ink-faint); margin-bottom: 8px; text-align: center; letter-spacing: 1px; }
+.days-row { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
+.day-cell {
+  aspect-ratio: 1;
+  border-radius: 5px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform .12s, box-shadow .12s;
+}
+.day-cell canvas { width: 100%; height: 100%; }
+.day-cell:hover { transform: scale(1.35); box-shadow: 0 0 12px var(--moon-glow); z-index: 2; }
+.day-cell.selected { outline: 2px solid var(--accent); outline-offset: 1px; }
+.day-cell.full { box-shadow: 0 0 8px var(--moon-glow); }
+
+.foot {
+  text-align: center;
+  font-size: 12px;
+  color: var(--ink-faint);
+  padding: 24px 20px 40px;
+  max-width: 1920px;
+  margin: 0 auto;
+}
+
+@media (max-width: 560px) {
+  .topbar { padding: 16px; }
+  .rs-time { font-size: 20px; }
+  .poem-text { font-size: 18px; }
+  .poem-card { padding: 16px; gap: 12px; }
+}

@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>月升月落 · 全年月相</title>
+  <meta name="description" content="查询全年每天的月升月落时间、月相与观测方位，配当日月相古诗。" />
+  <meta name="theme-color" content="#070a17" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="icon.svg" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="月升月落" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="stars" id="stars"></div>
+
+  <header class="topbar">
+    <h1>月升月落</h1>
+    <div class="controls">
+      <label class="ctl">
+        <span>地点</span>
+        <select id="location"></select>
+      </label>
+      <label class="ctl">
+        <span>日期</span>
+        <input type="date" id="datePicker" />
+      </label>
+      <button id="todayBtn" class="btn-ghost">今天</button>
+    </div>
+  </header>
+
+  <main>
+    <div class="layout">
+    <!-- 左侧月历：1-6 月，竖向 -->
+    <aside class="cal-col cal-left">
+      <div class="year-head">
+        <h2 id="yearTitle">全年月相</h2>
+        <div class="year-nav">
+          <button id="prevYear" class="btn-ghost">‹</button>
+          <span id="yearLabel"></span>
+          <button id="nextYear" class="btn-ghost">›</button>
+        </div>
+      </div>
+      <div class="year-grid-col" id="yearGridLeft"></div>
+    </aside>
+
+    <div class="pane-center">
+    <!-- 中央天空穹顶 -->
+    <section class="dome-section">
+      <div class="dome-wrap">
+        <svg id="dome" viewBox="0 0 800 460" preserveAspectRatio="xMidYMid meet"></svg>
+        <!-- 罗盘叠加在穹顶左下角 -->
+        <div class="dome-compass">
+          <svg id="compass" viewBox="0 0 220 220" preserveAspectRatio="xMidYMid meet"></svg>
+        </div>
+      </div>
+
+      <!-- 观测时刻控制 -->
+      <div class="time-control">
+        <div class="tc-row">
+          <label class="tc-label" for="obsTime">观测时刻</label>
+          <input type="time" id="obsTime" step="60" />
+          <button id="nowBtn" class="btn-ghost tc-now">此刻</button>
+          <span class="tc-live" id="liveState"></span>
+        </div>
+        <input type="range" id="timeSlider" min="0" max="1439" step="1" class="time-slider" />
+      </div>
+
+      <div class="dome-info">
+        <div class="rise-set rise">
+          <div class="rs-label">月升 ↑</div>
+          <div class="rs-time" id="riseTime">--:--</div>
+          <div class="rs-az" id="riseAz"></div>
+        </div>
+        <div class="phase-center">
+          <div class="phase-name" id="phaseName">—</div>
+          <div class="phase-illum" id="phaseIllum"></div>
+        </div>
+        <div class="rise-set set">
+          <div class="rs-label">月落 ↓</div>
+          <div class="rs-time" id="setTime">--:--</div>
+          <div class="rs-az" id="setAz"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 当天配诗 -->
+    <section class="poem-card" id="poemCard">
+      <div class="poem-phase-icon"><canvas id="poemMoon" width="72" height="72"></canvas></div>
+      <blockquote>
+        <p class="poem-text" id="poemText"></p>
+        <cite class="poem-author" id="poemAuthor"></cite>
+      </blockquote>
+    </section>
+
+    <!-- 观测指引：面向北方时月亮在哪 -->
+    <section class="observe-card" id="observeCard">
+      <div class="observe-text">
+        <div class="observe-title">面向正北观测</div>
+        <p class="observe-desc" id="observeDesc">—</p>
+        <p class="observe-hint" id="observeHint"></p>
+      </div>
+    </section>
+    </div><!-- /pane-center -->
+
+    <!-- 右侧月历：7-12 月，竖向 -->
+    <aside class="cal-col cal-right">
+      <div class="year-head year-head-spacer" aria-hidden="true"></div>
+      <div class="year-grid-col" id="yearGridRight"></div>
+    </aside>
+    </div><!-- /layout -->
+  </main>
+
+  <footer class="foot">
+    月相与升落时刻由 SunCalc 本地计算 · 时间为所选地点当地时区近似值
+  </footer>
+
+  <script src="vendor/suncalc.js"></script>
+  <script src="js/poems.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js').catch(() => {});
+      });
+    }
+  </script>
+</body>
+</html>
