@@ -149,6 +149,49 @@ function el(tag, attrs) {
   return n;
 }
 
+/* 直接用 SVG 画月相（不依赖 foreignObject/canvas，手机上定位可靠）。
+   返回一个 <g> 元素。illum=0..1 照明比例，phaseVal 决定盈亏。 */
+let _svgMoonSeq = 0;
+function svgMoon(cx, cy, r, illum, phaseVal, opts) {
+  opts = opts || {};
+  const g = el('g', {});
+  const lit = Math.max(0, Math.min(1, illum));
+  const waxing = phaseVal <= 0.5;      // 上半月：右侧亮
+  const rx = Math.max(0.01, Math.abs(1 - 2 * lit) * r); // 终结线椭圆的横向半轴(避免0导致某些浏览器不画弧)
+  const gid = 'mg' + (_svgMoonSeq++);
+
+  // 渐变（高光偏左上）
+  const defs = el('defs', {});
+  const rg = el('radialGradient', { id: gid, cx: '38%', cy: '34%', r: '70%' });
+  rg.appendChild(el('stop', { offset: '0%', 'stop-color': '#fffdf0' }));
+  rg.appendChild(el('stop', { offset: '100%', 'stop-color': opts.moon || '#efe9c4' }));
+  defs.appendChild(rg); g.appendChild(defs);
+
+  // 暗面底盘
+  g.appendChild(el('circle', { cx, cy, r, fill: opts.dark || '#1c2340' }));
+
+  // 亮面路径：外缘半圆 + 终结线椭圆弧
+  const top = `${cx.toFixed(2)} ${(cy - r).toFixed(2)}`;
+  const bot = `${cx.toFixed(2)} ${(cy + r).toFixed(2)}`;
+  // 外缘半圆方向：waxing 走右半(sweep=1)，waning 走左半(sweep=0)
+  const outerSweep = waxing ? 1 : 0;
+  // 终结线：lit>0.5(凸) 与 <0.5(凹) 决定椭圆弧凸向；用 sweep 控制
+  let termSweep;
+  if (waxing) termSweep = lit >= 0.5 ? 1 : 0;
+  else termSweep = lit >= 0.5 ? 0 : 1;
+  const d = `M ${top} A ${r.toFixed(2)} ${r.toFixed(2)} 0 0 ${outerSweep} ${bot}`
+          + ` A ${rx.toFixed(2)} ${r.toFixed(2)} 0 0 ${termSweep} ${top} Z`;
+  g.appendChild(el('path', { d, fill: `url(#${gid})` }));
+
+  // 外圈微光
+  g.appendChild(el('circle', { cx, cy, r, fill: 'none', stroke: 'rgba(244,241,208,0.3)', 'stroke-width': 1 }));
+
+  if (opts.glow) {
+    g.setAttribute('style', 'filter: drop-shadow(0 0 7px rgba(244,241,208,0.85))');
+  }
+  return g;
+}
+
 function renderDome() {
   const svg = document.getElementById('dome');
   svg.innerHTML = '';
@@ -249,32 +292,22 @@ function renderDome() {
   if (moonH !== null) {
     const mp = hourToPoint(moonH);
     const aboveHorizon = obsPos ? obsPos.altitude > 0 : true;
-    const size = 64;
-    const fo = el('foreignObject', { x: mp.x - size / 2, y: mp.y - size / 2, width: size, height: size });
-    const cvWrap = document.createElement('div');
-    cvWrap.style.width = size + 'px'; cvWrap.style.height = size + 'px';
-    const cv = document.createElement('canvas');
-    cv.width = size; cv.height = size;
-    cvWrap.appendChild(cv);
-    fo.appendChild(cvWrap);
-    svg.appendChild(fo);
-    const mctx = cv.getContext('2d');
-    mctx.save();
-    if (aboveHorizon) {
-      mctx.shadowColor = 'rgba(244,241,208,0.7)';
-      mctx.shadowBlur = 18;
-    } else {
-      mctx.globalAlpha = 0.35; // 地平线下：暗淡表示看不到
-    }
-    drawMoon(mctx, size / 2, size / 2, size / 2 - 6, illum.fraction, illum.phase);
-    mctx.restore();
+    const moonR = 26;
 
-    // 观测时刻的竖直指示线（从地平线到月亮）
+    // 观测时刻的竖直指示线（从地平线到月亮），先画在月亮下面
     if (obsIsLive) {
-      const foot = { x: mp.x, y: baseY };
-      svg.appendChild(el('line', { x1: foot.x, y1: foot.y, x2: mp.x, y2: mp.y + size / 2 - 6,
+      svg.appendChild(el('line', { x1: mp.x, y1: baseY, x2: mp.x, y2: mp.y + moonR,
         stroke: aboveHorizon ? 'rgba(244,241,208,0.35)' : 'rgba(154,163,199,0.25)', 'stroke-width': 1, 'stroke-dasharray': '3 3' }));
-      const tl = el('text', { x: mp.x, y: mp.y - size / 2 - 4, 'text-anchor': 'middle', 'font-size': 12,
+    }
+
+    // 直接用 SVG 画月亮（避免 foreignObject 在手机上跑位）
+    const moon = svgMoon(mp.x, mp.y, moonR, illum.fraction, illum.phase, { glow: aboveHorizon });
+    if (!aboveHorizon) moon.setAttribute('opacity', '0.35');
+    svg.appendChild(moon);
+
+    if (obsIsLive) {
+      const labelY = Math.max(14, mp.y - moonR - 6); // 顶到边界时夹住，别冲出穹顶
+      const tl = el('text', { x: mp.x, y: labelY, 'text-anchor': 'middle', 'font-size': 13,
         fill: aboveHorizon ? '#f4f1d0' : 'var(--ink-faint)' });
       const hh = String(Math.floor(obsMin / 60)).padStart(2, '0'), mm = String(obsMin % 60).padStart(2, '0');
       tl.textContent = `${hh}:${mm}`;
